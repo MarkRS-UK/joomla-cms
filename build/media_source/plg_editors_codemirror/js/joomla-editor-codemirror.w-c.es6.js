@@ -2,16 +2,12 @@
  * @copyright  (C) 2018 Open Source Matters, Inc. <https://www.joomla.org>
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
-
-// eslint-disable-next-line import/no-unresolved, max-classes-per-file
 import { JoomlaEditor, JoomlaEditorDecorator } from 'editor-api';
-// eslint-disable-next-line import/no-unresolved
 import { createFromTextarea, EditorState, keymap } from 'codemirror';
 
 /**
  * Codemirror Decorator for JoomlaEditor
  */
-// eslint-disable-next-line max-classes-per-file
 class CodemirrorDecorator extends JoomlaEditorDecorator {
   /**
    * @returns {string}
@@ -118,8 +114,12 @@ class CodemirrorEditor extends HTMLElement {
 
   disconnectedCallback() {
     if (this.instance) {
+      if (this.element && this.jEditor && this.jEditor.getValue) {
+        this.element.value = this.jEditor.getValue();
+      }
       this.element.style.display = '';
       this.instance.destroy();
+      this.instance = null;
     }
     // Remove from the Joomla API
     JoomlaEditor.unregister(this.element.id);

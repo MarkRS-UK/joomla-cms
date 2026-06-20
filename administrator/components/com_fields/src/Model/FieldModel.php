@@ -111,10 +111,28 @@ class FieldModel extends AdminModel
      */
     public function save($data)
     {
-        $field = null;
+        $field                     = null;
+        $hasDuplicateSubformFields = false;
 
         if (isset($data['id']) && $data['id']) {
             $field = $this->getItem($data['id']);
+        }
+
+        $fieldType = $data['type'] ?? ($field->type ?? null);
+
+        if ($fieldType === 'subform' && isset($data['fieldparams']['options']) && \is_array($data['fieldparams']['options'])) {
+            $seenCustomFields = [];
+
+            foreach ($data['fieldparams']['options'] as $option) {
+                $customField = (string) ($option['customfield'] ?? '');
+
+                if (isset($seenCustomFields[$customField])) {
+                    $hasDuplicateSubformFields = true;
+                    break;
+                }
+
+                $seenCustomFields[$customField] = true;
+            }
         }
 
         if (isset($data['params']['searchindex'])) {
@@ -140,14 +158,14 @@ class FieldModel extends AdminModel
         $input = Factory::getApplication()->getInput();
 
         if ($input->get('task') == 'save2copy') {
-            $origTable = clone $this->getTable();
+            $origTable = $this->getTable();
             $origTable->load($input->getInt('id'));
 
             if ($data['title'] == $origTable->title) {
-                list($title, $name) = $this->generateNewTitle($data['group_id'], $data['name'], $data['title']);
-                $data['title']      = $title;
-                $data['label']      = $title;
-                $data['name']       = $name;
+                [$title, $name] = $this->generateNewTitle($data['group_id'], $data['name'], $data['title']);
+                $data['title']  = $title;
+                $data['label']  = $title;
+                $data['name']   = $name;
             } else {
                 if ($data['name'] == $origTable->name) {
                     $data['name'] = '';
@@ -170,6 +188,10 @@ class FieldModel extends AdminModel
 
         if (!parent::save($data)) {
             return false;
+        }
+
+        if ($hasDuplicateSubformFields) {
+            Factory::getApplication()->enqueueMessage(Text::_('COM_FIELDS_FIELD_SUBFORM_DUPLICATE_FIELDS_REMOVED'), 'warning');
         }
 
         // Save the assigned categories into #__fields_categories
@@ -229,7 +251,7 @@ class FieldModel extends AdminModel
          */
         if (
             $field && \in_array($field->type, ['list', 'checkboxes', 'radio'], true)
-            && isset($data['fieldparams']['options']) && isset($field->fieldparams['options'])
+            && isset($data['fieldparams']['options'], $field->fieldparams['options'])
         ) {
             $oldParams = $this->getParams($field->fieldparams['options']);
             $newParams = $this->getParams($data['fieldparams']['options']);
@@ -329,8 +351,8 @@ class FieldModel extends AdminModel
         if ($rule instanceof DatabaseAwareInterface) {
             try {
                 $rule->setDatabase($this->getDatabase());
-            } catch (DatabaseNotFoundException $e) {
-                @trigger_error(\sprintf('Database must be set, this will not be caught anymore in 5.0.'), E_USER_DEPRECATED);
+            } catch (DatabaseNotFoundException) {
+                @trigger_error('Database must be set, this will not be caught anymore in 5.0.', E_USER_DEPRECATED);
                 $rule->setDatabase(Factory::getContainer()->get(DatabaseInterface::class));
             }
         }
@@ -1060,11 +1082,11 @@ class FieldModel extends AdminModel
                 // Try to get the categories for this component and section
                 try {
                     $cat = $componentObject->getCategory([], $section ?: '');
-                } catch (SectionNotFoundException $e) {
+                } catch (SectionNotFoundException) {
                     // Not found for component and section -> Now try once more without the section, so only component
                     try {
                         $cat = $componentObject->getCategory();
-                    } catch (SectionNotFoundException $e) {
+                    } catch (SectionNotFoundException) {
                         // If we haven't found it now, return (no categories available for this component)
                         return null;
                     }
@@ -1133,6 +1155,7 @@ class FieldModel extends AdminModel
         switch ($context) {
             case 'com_content':
                 parent::cleanCache('com_content');
+                parent::cleanCache('mod_articles');
                 parent::cleanCache('mod_articles_archive');
                 parent::cleanCache('mod_articles_categories');
                 parent::cleanCache('mod_articles_category');
@@ -1168,6 +1191,16 @@ class FieldModel extends AdminModel
 
         foreach ($pks as $pk) {
             if ($user->authorise('core.create', $component . '.fieldgroup.' . $value)) {
+                // Find all assigned categories to this field
+                $db    = $this->getDatabase();
+                $query = $db->getQuery(true);
+
+                $query->select($db->quoteName('category_id'))
+                    ->from($db->quoteName('#__fields_categories'))
+                    ->where($db->quoteName('field_id') . ' = ' . (int) $pk);
+
+                $assignedCatIds = $db->setQuery($query)->loadColumn();
+
                 $table->reset();
                 $table->load($pk);
 
@@ -1193,6 +1226,17 @@ class FieldModel extends AdminModel
 
                 // Get the new item ID
                 $newId = $table->id;
+
+                // Inset the assigned categories
+                if (!empty($assignedCatIds)) {
+                    $tuple           = new \stdClass();
+                    $tuple->field_id = $newId;
+
+                    foreach ($assignedCatIds as $catId) {
+                        $tuple->category_id = $catId;
+                        $db->insertObject('#__fields_categories', $tuple);
+                    }
+                }
 
                 // Add the new ID to the array
                 $newIds[$pk] = $newId;

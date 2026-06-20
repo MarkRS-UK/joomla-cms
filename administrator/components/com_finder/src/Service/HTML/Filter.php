@@ -69,7 +69,7 @@ class Filter
 
             try {
                 $filter = $db->loadObject();
-            } catch (\RuntimeException $e) {
+            } catch (\RuntimeException) {
                 return null;
             }
 
@@ -100,7 +100,7 @@ class Filter
 
         try {
             $branches = $db->loadObjectList('id');
-        } catch (\RuntimeException $e) {
+        } catch (\RuntimeException) {
             return null;
         }
 
@@ -141,7 +141,7 @@ class Filter
 
             try {
                 $nodes = $db->loadObjectList('id');
-            } catch (\RuntimeException $e) {
+            } catch (\RuntimeException) {
                 return null;
             }
 
@@ -238,7 +238,7 @@ class Filter
 
                 try {
                     $filter = $db->loadObject();
-                } catch (\RuntimeException $e) {
+                } catch (\RuntimeException) {
                     return null;
                 }
 
@@ -273,7 +273,7 @@ class Filter
 
             try {
                 $branches = $db->loadObjectList('id');
-            } catch (\RuntimeException $e) {
+            } catch (\RuntimeException) {
                 return null;
             }
 
@@ -321,7 +321,7 @@ class Filter
 
                 try {
                     $bv->nodes = $db->loadObjectList('id');
-                } catch (\RuntimeException $e) {
+                } catch (\RuntimeException) {
                     return null;
                 }
 
@@ -383,10 +383,10 @@ class Filter
             // Check if the branch is in the filter.
             if (\array_key_exists($bv->title, $idxQuery->filters)) {
                 // Get the request filters.
-                $temp   = Factory::getApplication()->getInput()->request->get('t', [], 'array');
+                $temp = Factory::getApplication()->getInput()->request->get('t', [], 'array');
 
                 // Search for active nodes in the branch and get the active node.
-                $active = array_intersect($temp, $idxQuery->filters[$bv->title]);
+                $active = array_intersect($temp, array_keys($idxQuery->filters[$bv->title]));
                 $active = \count($active) === 1 ? array_shift($active) : null;
             }
 

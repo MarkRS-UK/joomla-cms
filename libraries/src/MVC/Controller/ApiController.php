@@ -16,8 +16,8 @@ use Joomla\CMS\Form\Form;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\ListModel;
+use Joomla\CMS\MVC\Model\State;
 use Joomla\CMS\MVC\View\JsonApiView;
-use Joomla\CMS\Object\CMSObject;
 use Joomla\Input\Input;
 use Joomla\String\Inflector;
 use Tobscure\JsonApi\Exception\InvalidParameterException;
@@ -86,7 +86,9 @@ class ApiController extends BaseController
     /**
      * The model state to inject
      *
-     * @var  \Joomla\Registry\Registry
+     * @var  State|\Joomla\Registry\Registry
+     *
+     * @todo   Remove the State type hint in Joomla 7.0 since it will be removed see State class
      */
     protected $modelState;
 
@@ -106,7 +108,7 @@ class ApiController extends BaseController
      */
     public function __construct($config = [], ?MVCFactoryInterface $factory = null, ?CMSWebApplicationInterface $app = null, ?Input $input = null)
     {
-        $this->modelState = new CMSObject();
+        $this->modelState = new State();
 
         parent::__construct($config, $factory, $app, $input);
 
@@ -205,12 +207,12 @@ class ApiController extends BaseController
 
         if (\array_key_exists('offset', $paginationInfo)) {
             $offset = $paginationInfo['offset'];
-            $this->modelState->set($this->context . '.limitstart', $offset);
+            $this->modelState->set($this->context . '.limitstart', (int) $offset);
         }
 
         if (\array_key_exists('limit', $paginationInfo)) {
             $limit = $paginationInfo['limit'];
-            $this->modelState->set($this->context . '.list.limit', $limit);
+            $this->modelState->set($this->context . '.list.limit', (int) $limit);
         }
 
         $viewType   = $this->app->getDocument()->getType();
@@ -241,8 +243,25 @@ class ApiController extends BaseController
         // Push the model into the view (as default)
         $view->setModel($model, true);
 
+        /**
+         * Check the currently set order values in the modelstate against the valid filters
+         */
+        if (
+            $this->modelState->get('list.ordering')
+            && !$model->isValidFilterColumn($this->modelState->get('list.ordering'))
+        ) {
+            $model->setState('list.ordering', null);
+        }
+
+        if (
+            $this->modelState->get('list.direction')
+            && !\in_array(strtolower($this->modelState->get('list.direction')), ['asc', 'desc'], true)
+        ) {
+            $model->setState('list.direction', 'asc');
+        }
+
         if ($offset) {
-            $model->setState('list.start', $offset);
+            $model->setState('list.start', (int) $offset);
         }
 
         /**
@@ -250,7 +269,7 @@ class ApiController extends BaseController
          * the last page of data. If there isn't a limit start then set
          */
         if ($limit) {
-            $model->setState('list.limit', $limit);
+            $model->setState('list.limit', (int) $limit);
         } else {
             $model->setState('list.limit', $this->itemsPerPage);
         }
@@ -299,8 +318,6 @@ class ApiController extends BaseController
             if ($model->getError() !== false) {
                 throw new \RuntimeException($model->getError(), 500);
             }
-
-            throw new \RuntimeException(Text::_('JLIB_APPLICATION_ERROR_DELETE'), 500);
         }
 
         $this->app->setHeader('status', 204);
@@ -420,7 +437,7 @@ class ApiController extends BaseController
         $data = $this->preprocessSaveData($data);
 
         // @todo: Not the cleanest thing ever but it works...
-        Form::addFormPath(JPATH_COMPONENT_ADMINISTRATOR . '/forms');
+        Form::addFormPath(JPATH_ADMINISTRATOR . '/components/' . $this->option . '/forms');
 
         // Needs to be set because com_fields needs the data in jform to determine the assigned catid
         $this->input->set('jform', $data);

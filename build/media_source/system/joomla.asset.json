@@ -173,7 +173,7 @@
       "type": "script",
       "class": "FormValidateAssetItem",
       "attributes": {
-        "defer": true
+        "type": "module"
       },
       "dependencies": [
         "core"
@@ -253,11 +253,6 @@
       "name": "field.calendar",
       "type": "style",
       "uri": "system/fields/calendar.css"
-    },
-    {
-      "name": "field.calendar-rtl",
-      "type": "style",
-      "uri": "system/fields/calendar-rtl.css"
     },
     {
       "name": "field.calendar.helper",

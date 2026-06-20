@@ -126,7 +126,7 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
         // Contact plugins
         PluginHelper::importPlugin('contact');
 
-        Form::addFormPath(JPATH_COMPONENT_SITE . '/forms');
+        Form::addFormPath(JPATH_SITE . '/components/com_contact/forms');
 
         // Validate the posted data.
         $form = $model->getForm();
@@ -171,15 +171,9 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
         $data = $event->getArgument('data', $data);
 
         // Send the email
-        $sent = false;
-
         $params = ComponentHelper::getParams('com_contact');
 
-        if (!$params->get('custom_reply')) {
-            $sent = $this->_sendEmail($data, $contact, $params->get('show_email_copy', 0));
-        }
-
-        if (!$sent) {
+        if (!$params->get('custom_reply') && !$this->_sendEmail($data, $contact, $params->get('show_email_copy', 0))) {
             throw new SendEmail('Error sending message');
         }
 
@@ -205,7 +199,7 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
 
         if ($contact->email_to == '' && $contact->user_id != 0) {
             $contact_user      = $this->getUserFactory()->loadUserById($contact->user_id);
-            $contact->email_to = $contact_user->get('email');
+            $contact->email_to = $contact_user->email;
         }
 
         $templateData = [
@@ -244,7 +238,7 @@ class ContactController extends ApiController implements UserFactoryAwareInterfa
             $sent = $mailer->send();
 
             // If we are supposed to copy the sender, do so.
-            if ($emailCopyToSender == true && !empty($data['contact_email_copy'])) {
+            if ($emailCopyToSender && !empty($data['contact_email_copy'])) {
                 $mailer = new MailTemplate('com_contact.mail.copy', $app->getLanguage()->getTag());
                 $mailer->addRecipient($templateData['email']);
                 $mailer->setReplyTo($templateData['email'], $templateData['name']);

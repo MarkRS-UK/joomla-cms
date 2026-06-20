@@ -107,11 +107,6 @@ class ItemsModel extends ListModel
         $currentClientId = $app->getUserState($this->context . '.client_id', 0);
         $clientId        = $app->getInput()->getInt('client_id', $currentClientId);
 
-        // Load mod_menu.ini file when client is administrator
-        if ($clientId == 1) {
-            Factory::getLanguage()->load('mod_menu', JPATH_ADMINISTRATOR);
-        }
-
         $currentMenuType = $app->getUserState($this->context . '.menutype', '');
         $menuType        = $app->getInput()->getString('menutype', $currentMenuType);
 
@@ -167,6 +162,11 @@ class ItemsModel extends ListModel
         // Use a different filter file when client is administrator
         if ($clientId == 1) {
             $this->filterFormName = 'filter_itemsadmin';
+        }
+
+        // Load mod_menu.ini file when client is administrator
+        if ($clientId == 1) {
+            Factory::getLanguage()->load('mod_menu', JPATH_ADMINISTRATOR);
         }
 
         $this->setState('filter.menutype', $menuType);
@@ -497,7 +497,7 @@ class ItemsModel extends ListModel
         if ($name == 'com_menus.items.filter') {
             $clientId = $this->getState('filter.client_id');
             $form->setFieldAttribute('menutype', 'clientid', $clientId);
-        } elseif (false !== strpos($name, 'com_menus.items.modal.')) {
+        } elseif (str_contains($name, 'com_menus.items.modal.')) {
             $form->removeField('client_id');
 
             $clientId = $this->getState('filter.client_id');

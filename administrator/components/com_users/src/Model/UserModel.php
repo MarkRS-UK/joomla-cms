@@ -292,7 +292,7 @@ class UserModel extends AdminModel implements UserFactoryAwareInterface
         }
 
         // Destroy all active sessions for the user after changing the password or blocking him
-        if ($data['password2'] || $data['block']) {
+        if (!empty($data['password2']) || $data['block']) {
             UserHelper::destroyUserSessions($user->id, true);
         }
 
@@ -351,7 +351,7 @@ class UserModel extends AdminModel implements UserFactoryAwareInterface
                     }
 
                     // Trigger the after delete event.
-                    Factory::getApplication()->triggerEvent($this->event_after_delete, [$user_to_delete->getProperties(), true, $this->getError()]);
+                    Factory::getApplication()->triggerEvent($this->event_after_delete, [ArrayHelper::fromObject($user_to_delete, false), true, $this->getError()]);
                 } else {
                     // Prune items that you can't change.
                     unset($pks[$i]);
@@ -624,6 +624,13 @@ class UserModel extends AdminModel implements UserFactoryAwareInterface
     {
         $userIds = ArrayHelper::toInteger($userIds);
 
+        // Check if user can perform management tasks in com_users
+        if (!$this->getCurrentUser()->authorise('core.manage', 'com_users')) {
+            $this->setError(Text::_('JLIB_APPLICATION_ERROR_BATCH_CANNOT_EDIT'));
+
+            return false;
+        }
+
         // Check if I am a Super Admin
         $iAmSuperAdmin = $this->getCurrentUser()->authorise('core.admin');
 
@@ -690,6 +697,13 @@ class UserModel extends AdminModel implements UserFactoryAwareInterface
     public function batchUser($groupId, $userIds, $action)
     {
         $userIds = ArrayHelper::toInteger($userIds);
+
+        // Check if user can perform management tasks in com_users
+        if (!$this->getCurrentUser()->authorise('core.manage', 'com_users')) {
+            $this->setError(Text::_('JLIB_APPLICATION_ERROR_BATCH_CANNOT_EDIT'));
+
+            return false;
+        }
 
         // Check if I am a Super Admin
         $iAmSuperAdmin = $this->getCurrentUser()->authorise('core.admin');

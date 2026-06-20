@@ -65,6 +65,8 @@ if ($workflow_enabled) :
 
     $workflow_state    = Factory::getApplication()->bootComponent('com_content')->isFunctionalityUsed('core.state', 'com_content.article');
     $workflow_featured = Factory::getApplication()->bootComponent('com_content')->isFunctionalityUsed('core.featured', 'com_content.article');
+
+    $this->filterForm->addControlField('transition_id', '');
 endif;
 
 $assoc = Associations::isEnabled();
@@ -165,23 +167,26 @@ $assoc = Associations::isEnabled();
                             $canEditOwnParCat     = $user->authorise('core.edit.own', 'com_content.category.' . $item->parent_category_id) && $item->parent_category_uid == $userId;
 
                             // Transition button options
-                            $options = [
-                                'title' => Text::_($item->stage_title),
-                                'tip_content' => Text::sprintf('JWORKFLOW', Text::_($item->workflow_title)),
-                                'id' => 'workflow-' . $item->id,
-                                'task' => 'articles.runTransition',
-                                'disabled' => !$canExecuteTransition,
-                            ];
+                            if ($workflow_enabled) {
+                                $options = [
+                                    'title' => Text::_($item->stage_title),
+                                    'tip_content' => Text::sprintf('JWORKFLOW', Text::_($item->workflow_title)),
+                                    'id' => 'workflow-' . $item->id,
+                                    'task' => 'articles.runTransition',
+                                    'disabled' => !$canExecuteTransition,
+                                ];
+                                $dataTransitionsAttribute = '';
 
-                            if ($canExecuteTransition) {
-                                $transitions = ContentHelper::filterTransitions($this->transitions, (int) $item->stage_id, (int) $item->workflow_id);
+                                if ($canExecuteTransition) {
+                                    $transitions = ContentHelper::filterTransitions($this->transitions, (int) $item->stage_id, (int) $item->workflow_id);
 
-                                $transition_ids = ArrayHelper::getColumn($transitions, 'value');
-                                $transition_ids = ArrayHelper::toInteger($transition_ids);
+                                    $transition_ids = ArrayHelper::getColumn($transitions, 'value');
+                                    $transition_ids = ArrayHelper::toInteger($transition_ids);
 
-                                $dataTransitionsAttribute = 'data-transitions="' . implode(',', $transition_ids) . '"';
+                                    $dataTransitionsAttribute = $transition_ids ? 'data-transitions="' . implode(',', $transition_ids) . '"' : '';
 
-                                $options = array_merge($options, ['transitions' => $transitions]);
+                                    $options = array_merge($options, ['transitions' => $transitions]);
+                                }
                             }
 
                             ?>
@@ -319,12 +324,12 @@ $assoc = Associations::isEnabled();
                                     <?php echo $this->escape($item->access_level); ?>
                                 </td>
                                 <td class="small d-none d-md-table-cell">
-                                    <?php if ((int) $item->created_by != 0) : ?>
+                                    <?php if (!empty($item->author_name)) : ?>
                                         <a href="<?php echo Route::_('index.php?option=com_users&task=user.edit&id=' . (int) $item->created_by); ?>">
                                             <?php echo $this->escape($item->author_name); ?>
                                         </a>
                                     <?php else : ?>
-                                        <?php echo Text::_('JNONE'); ?>
+                                        [ <?php echo Text::_('JNONE'); ?> ]
                                     <?php endif; ?>
                                     <?php if ($item->created_by_alias) : ?>
                                         <div class="smallsub"><?php echo Text::sprintf('JGLOBAL_LIST_ALIAS', $this->escape($item->created_by_alias)); ?></div>
@@ -389,13 +394,7 @@ $assoc = Associations::isEnabled();
                     <?php endif; ?>
                 <?php endif; ?>
 
-                <?php if ($workflow_enabled) : ?>
-                <input type="hidden" name="transition_id" value="">
-                <?php endif; ?>
-
-                <input type="hidden" name="task" value="">
-                <input type="hidden" name="boxchecked" value="0">
-                <?php echo HTMLHelper::_('form.token'); ?>
+                <?php echo $this->filterForm->renderControlFields(); ?>
             </div>
         </div>
     </div>

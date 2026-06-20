@@ -696,7 +696,7 @@ abstract class Bootstrap
         // Setup options object
         $opt           = [];
         $opt['parent'] = isset($options['parent']) ?
-            ($options['parent'] == true ? '#' . preg_replace('/^[\.#]/', '', $selector) : $options['parent']) : '';
+            ($options['parent'] ? '#' . preg_replace('/^[\.#]/', '', $selector) : $options['parent']) : '';
         $opt['toggle'] = isset($options['toggle']) ? (bool) $options['toggle'] : !($opt['parent'] === false || isset($options['active']));
         $opt['active'] = (string) ($options['active'] ?? '');
 
@@ -736,12 +736,13 @@ abstract class Bootstrap
      */
     public static function addSlide($selector, $text, $id, $class = ''): string
     {
-        $in        = static::$loaded[__CLASS__ . '::startAccordion'][$selector]['active'] === $id ? ' show' : '';
-        $collapsed = static::$loaded[__CLASS__ . '::startAccordion'][$selector]['active'] === $id ? '' : ' collapsed';
-        $parent    = static::$loaded[__CLASS__ . '::startAccordion'][$selector]['parent'] ?
-            'data-bs-parent="' . static::$loaded[__CLASS__ . '::startAccordion'][$selector]['parent'] . '"' : '';
-        $class        = (!empty($class)) ? ' ' . $class : '';
-        $ariaExpanded = $in === 'show';
+        $item     = static::$loaded[__CLASS__ . '::startAccordion'][$selector];
+        $isActive = $item['active'] === $id;
+
+        $in           = $isActive ? 'show' : '';
+        $collapsed    = $isActive ? '' : 'collapsed';
+        $ariaExpanded = $isActive ? 'true' : 'false';
+        $parent       = $item['parent'] ? 'data-bs-parent="' . $item['parent'] . '"' : '';
 
         return <<<HTMLSTR
 <div class="accordion-item $class">
@@ -880,7 +881,7 @@ HTMLSTR;
     {
         static $tabLayout = null;
 
-        $tabLayout = $tabLayout === null ? new FileLayout('libraries.html.bootstrap.tab.addtab') : $tabLayout;
+        $tabLayout = $tabLayout ?? new FileLayout('libraries.html.bootstrap.tab.addtab');
         $active    = (static::$loaded[__CLASS__ . '::startTabSet'][$selector]['active'] == $id) ? ' active' : '';
 
         return $tabLayout->render(['id' => preg_replace('/^[\.#]/', '', $id), 'active' => $active, 'title' => $title]);

@@ -68,7 +68,7 @@ class LevelModel extends AdminModel
                      * than the 'access' field they are on their own unfortunately.
                      * Also make sure the table prefix matches the live db prefix (eg, it is not a "bak_" table)
                      */
-                    if (strpos($checktable, $prefix) === 0 && isset($fields['access'])) {
+                    if (str_starts_with($checktable, $prefix) && isset($fields['access'])) {
                         // Lookup the distinct values of the field.
                         $query->clear('from')
                             ->from($db->quoteName($checktable));
@@ -175,8 +175,10 @@ class LevelModel extends AdminModel
     {
         $result = parent::getItem($pk);
 
-        // Convert the params field to an array.
-        $result->rules = $result->rules !== null ? json_decode($result->rules) : [];
+        if ($result) {
+            // Convert the params field to an array.
+            $result->rules = $result->rules !== null ? json_decode($result->rules) : [];
+        }
 
         return $result;
     }

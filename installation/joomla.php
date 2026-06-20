@@ -23,7 +23,7 @@ if (version_compare(PHP_VERSION, JOOMLA_MINIMUM_PHP, '<')) {
     echo 'Please note, the version of PHP running your commands here, may be different to the version that is used by ';
     echo 'your web server to run the Joomla! Web Application' . PHP_EOL;
 
-    exit;
+    exit(1);
 }
 
 /**
@@ -36,4 +36,4 @@ if (version_compare(PHP_VERSION, JOOMLA_MINIMUM_PHP, '<')) {
 \define('_JCLI_INSTALLATION', 1);
 
 // Run the application - All executable code should be triggered through this file
-require_once \dirname(__FILE__) . '/includes/cli.php';
+require_once __DIR__ . '/includes/cli.php';

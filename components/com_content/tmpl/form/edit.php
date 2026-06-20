@@ -10,6 +10,7 @@
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Multilanguage;
 use Joomla\CMS\Language\Text;
@@ -44,7 +45,7 @@ if (!$params->exists('show_publishing_options')) {
     </div>
     <?php endif; ?>
 
-    <form action="<?php echo Route::_('index.php?option=com_content&a_id=' . (int) $this->item->id); ?>" method="post" name="adminForm" id="adminForm" class="form-validate form-vertical">
+    <form action="<?php echo Route::_('index.php'); ?>" method="post" name="adminForm" id="adminForm" class="form-validate form-vertical">
         <fieldset>
             <?php echo HTMLHelper::_('uitab.startTabSet', $this->tab_name, ['active' => 'editor', 'recall' => true, 'breakpoint' => 768]); ?>
 
@@ -151,9 +152,7 @@ if (!$params->exists('show_publishing_options')) {
 
             <?php echo HTMLHelper::_('uitab.endTabSet'); ?>
 
-            <input type="hidden" name="task" value="">
-            <input type="hidden" name="return" value="<?php echo $this->return_page; ?>">
-            <?php echo HTMLHelper::_('form.token'); ?>
+            <?php echo $this->form->renderControlFields(); ?>
         </fieldset>
         <div class="d-grid gap-2 d-sm-block mb-2">
             <button type="button" class="btn btn-primary" data-submit-task="article.apply">
@@ -174,7 +173,7 @@ if (!$params->exists('show_publishing_options')) {
                 <span class="icon-times" aria-hidden="true"></span>
                 <?php echo Text::_('JCANCEL'); ?>
             </button>
-            <?php if ($params->get('save_history', 0) && $this->item->id) : ?>
+            <?php if ($params->get('save_history', 0) && $this->item->id && ComponentHelper::isEnabled('com_contenthistory')) : ?>
                 <?php echo $this->form->getInput('contenthistory'); ?>
             <?php endif; ?>
         </div>
