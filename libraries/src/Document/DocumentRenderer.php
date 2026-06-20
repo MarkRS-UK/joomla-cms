@@ -11,6 +11,10 @@ namespace Joomla\CMS\Document;
 
 use Joomla\CMS\Uri\Uri;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * Abstract class for a renderer
  *
@@ -70,7 +74,7 @@ abstract class DocumentRenderer implements RendererInterface
     protected function _relToAbs($text)
     {
         $base = Uri::base();
-        $text = preg_replace("/(href|src)=\"(?!http|ftp|https|mailto|data|\/\/)([^\"]*)\"/", "$1=\"$base\$2\"", $text);
+        $text = preg_replace("/(href|src)=\"(?!http|ftp|https|mailto|data|\/\/)\/*([^\"]*)\"/", "$1=\"$base\$2\"", $text);
 
         return $text;
     }

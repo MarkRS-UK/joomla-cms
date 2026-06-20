@@ -17,6 +17,10 @@ use Joomla\CMS\Form\Field\ListField;
 use Joomla\CMS\Language\Text;
 use Joomla\Utilities\ArrayHelper;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * Components Fieldgroup field.
  *
@@ -54,7 +58,7 @@ class ComponentsFieldgroupField extends ListField
 
         $options = [];
 
-        if (count($items)) {
+        if (\count($items)) {
             $lang = Factory::getLanguage();
 
             $components = [];
@@ -90,11 +94,11 @@ class ComponentsFieldgroupField extends ListField
                 if ($c instanceof FieldsServiceInterface) {
                     $contexts = $c->getContexts();
 
-                    foreach ($contexts as $context) {
-                        $newOption = new \stdClass();
-                        $newOption->value = strtolower($component->value . '.' . $context);
-                        $newOption->text = $component->text . ' - ' . Text::_($context);
-                        $options[] = $newOption;
+                    foreach ($contexts as $contextKey => $contextName) {
+                        $newOption        = new \stdClass();
+                        $newOption->value = $contextKey;
+                        $newOption->text  = $component->text . ' - ' . Text::_($contextName);
+                        $options[]        = $newOption;
                     }
                 } else {
                     $options[] = $component;

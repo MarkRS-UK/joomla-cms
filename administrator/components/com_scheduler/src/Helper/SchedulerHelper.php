@@ -16,6 +16,10 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\Component\Scheduler\Administrator\Task\TaskOptions;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * The SchedulerHelper class.
  * Provides static methods used across com_scheduler
@@ -58,6 +62,13 @@ abstract class SchedulerHelper
 
         PluginHelper::importPlugin('task');
         $app->getDispatcher()->dispatch('onTaskOptionsList', $event);
+
+        if (isset($options->options) && \is_array($options->options)) {
+            // Sort the options alphabetically by title
+            usort($options->options, function ($a, $b) {
+                return strcmp($a->getTitle(), $b->getTitle());
+            });
+        }
 
         self::$taskOptionsCache = $options;
 

@@ -66,6 +66,7 @@ Text::script('ERROR');
 Text::script('WARNING');
 Text::script('NOTICE');
 Text::script('MESSAGE');
+Text::script('SUCCESS');
 
 // Add strings for JavaScript error translations.
 Text::script('JLIB_JS_AJAX_ERROR_CONNECTION_ABORT');
@@ -99,7 +100,7 @@ $ajaxUri = Route::_('index.php?option=com_config&task=application.store&format=j
         <?php // Initial Active Pane ?>
         <?php foreach ($groups as $group) : ?>
             <?php $active = (int) $group->value === 1 ? ' active' : ''; ?>
-            <joomla-tab-element class="tab-pane" <?php echo $active; ?> name="<?php echo htmlentities(LayoutHelper::render('joomla.html.treeprefix', array('level' => $group->level + 1)), ENT_COMPAT, 'utf-8') . $group->text; ?>" id="permission-<?php echo $group->value; ?>">
+            <joomla-tab-element class="tab-pane" <?php echo $active; ?> name="<?php echo htmlentities(LayoutHelper::render('joomla.html.treeprefix', ['level' => $group->level + 1]), ENT_COMPAT, 'utf-8') . $group->text; ?>" id="permission-<?php echo $group->value; ?>">
                 <table class="table respTable">
                     <thead>
                         <tr>
@@ -164,7 +165,7 @@ $ajaxUri = Route::_('index.php?option=com_config&task=application.store&format=j
                                 </td>
 
                                 <td data-label="<?php echo Text::_('JLIB_RULES_CALCULATED_SETTING'); ?>" headers="aclaction-th<?php echo $group->value; ?>">
-                                    <?php $result = array(); ?>
+                                    <?php $result = []; ?>
                                     <?php // Get the group, group parent id, and group global config recursive calculated permission for the chosen action. ?>
                                     <?php $inheritedGroupRule   = Access::checkGroup((int) $group->value, $action->name, $assetId);
                                     $inheritedGroupParentAssetRule = !empty($parentAssetId) ? Access::checkGroup($group->value, $action->name, $parentAssetId) : null;

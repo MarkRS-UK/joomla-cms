@@ -14,6 +14,10 @@ use Joomla\CMS\Factory;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Database\ParameterType;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * UCM Class for handling content types
  *
@@ -51,6 +55,7 @@ use Joomla\Database\ParameterType;
  * @property-read  string  $core_typeid
  *
  * @since  3.1
+ * @deprecated  5.4.0 will be removed in 7.0 without replacement
  */
 class UCMType implements UCM
 {
@@ -59,6 +64,7 @@ class UCMType implements UCM
      *
      * @var    UCMType
      * @since  3.1
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     public $type;
 
@@ -67,6 +73,7 @@ class UCMType implements UCM
      *
      * @var    DatabaseDriver
      * @since  3.1
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     protected $db;
 
@@ -75,25 +82,27 @@ class UCMType implements UCM
      *
      * @var    string
      * @since  3.1
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     protected $alias;
 
     /**
      * Class constructor
      *
-     * @param   string               $alias        The alias for the item
-     * @param   DatabaseDriver       $database     The database object
-     * @param   AbstractApplication  $application  The application object
+     * @param   string                $alias        The alias for the item
+     * @param   ?DatabaseDriver       $database     The database object
+     * @param   ?AbstractApplication  $application  The application object
      *
      * @since   3.1
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
-    public function __construct($alias = null, DatabaseDriver $database = null, AbstractApplication $application = null)
+    public function __construct($alias = null, ?DatabaseDriver $database = null, ?AbstractApplication $application = null)
     {
         $this->db = $database ?: Factory::getDbo();
         $app      = $application ?: Factory::getApplication();
 
         // Make the best guess we can in the absence of information.
-        $this->alias = $alias ?: $app->input->get('option') . '.' . $app->input->get('view');
+        $this->alias = $alias ?: $app->getInput()->get('option') . '.' . $app->getInput()->get('view');
         $this->type  = $this->getTypeByAlias($this->alias);
     }
 
@@ -105,6 +114,7 @@ class UCMType implements UCM
      * @return  object  The UCM Type data
      *
      * @since   3.1
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     public function getType($pk = null)
     {
@@ -131,6 +141,7 @@ class UCMType implements UCM
      * @return  object  The UCM Type data
      *
      * @since   3.2
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     public function getTypeByAlias($typeAlias = null)
     {
@@ -153,6 +164,7 @@ class UCMType implements UCM
      * @return  mixed  The UCM Type data if found, false if no match is found
      *
      * @since   3.2
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     public function getTypeByTable($tableName)
     {
@@ -164,7 +176,7 @@ class UCMType implements UCM
         $types = $this->db->loadObjectList();
 
         foreach ($types as $type) {
-            $tableFromType = json_decode($type->table);
+            $tableFromType     = json_decode($type->table);
             $tableNameFromType = $tableFromType->special->prefix . $tableFromType->special->type;
 
             if ($tableNameFromType === $tableName) {
@@ -183,6 +195,7 @@ class UCMType implements UCM
      * @return  mixed  The ID of the requested type or false if type is not found
      *
      * @since   3.1
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     public function getTypeId($alias = null)
     {
@@ -215,24 +228,26 @@ class UCMType implements UCM
      * @return  mixed  Array or object with field mappings. Defaults to object.
      *
      * @since   3.2
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     public function fieldmapExpand($assoc = false)
     {
         if (!empty($this->type->field_mappings)) {
             return $this->fieldmap = json_decode($this->type->field_mappings, $assoc);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
-     * Magic method to get the name of the field mapped to a ucm field (core_something).
+     * Magic method to get the name of the field mapped to an ucm field (core_something).
      *
-     * @param   string  $ucmField  The name of the field in JTableCorecontent
+     * @param   string  $ucmField  The name of the field in \Joomla\CMS\Table\CoreContent
      *
      * @return  string  The name mapped to the $ucmField for a given content type
      *
      * @since   3.2
+     * @deprecated  5.4.0 will be removed in 7.0 without replacement
      */
     public function __get($ucmField)
     {

@@ -15,7 +15,7 @@
         role="treeitem"
         :aria-level="level"
         :aria-setsize="directories.length"
-        :aria-posinset="index"
+        :aria-posinset="index + 1"
         :tabindex="getTabindex(item)"
         @click.stop.prevent="onItemClick(item)"
         @keyup.up="moveFocusToPreviousElement(index)"
@@ -28,7 +28,7 @@
         <span class="item-name">{{ item.name }}</span>
       </a>
       <transition name="slide-fade">
-        <media-tree
+        <MediaTree
           v-if="hasChildren(item)"
           v-show="isOpen(item)"
           :ref="item.path"
@@ -88,7 +88,11 @@ export default {
           {
             bubbles: true,
             cancelable: false,
-            detail: {},
+            detail: {
+              type: item.type,
+              name: item.name,
+              path: item.path,
+            },
           },
         ),
       );

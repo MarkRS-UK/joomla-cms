@@ -16,8 +16,10 @@ use Joomla\CMS\Router\Route;
 
 /** @var \Joomla\Component\Privacy\Site\View\Remind\HtmlView $this */
 
-HTMLHelper::_('behavior.keepalive');
-HTMLHelper::_('behavior.formvalidator');
+/** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
+$wa = $this->getDocument()->getWebAssetManager();
+$wa->useScript('keepalive')
+    ->useScript('form.validate');
 
 ?>
 <div class="remind-confirm<?php echo $this->pageclass_sfx; ?>">
@@ -28,7 +30,7 @@ HTMLHelper::_('behavior.formvalidator');
             </h1>
         </div>
     <?php endif; ?>
-    <form action="<?php echo Route::_('index.php?option=com_privacy&task=request.remind'); ?>" method="post" class="form-validate form-horizontal well">
+        <form action="<?php echo Route::_('index.php?task=request.remind'); ?>" method="post" class="form-validate form-horizontal well">
         <?php foreach ($this->form->getFieldsets() as $fieldset) : ?>
             <fieldset>
                 <?php if (!empty($fieldset->label)) : ?>

@@ -14,16 +14,17 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 
 $form     = $displayData->getForm();
-$options  = array(
+$options  = [
     'formControl' => $form->getFormControl(),
     'hidden'      => (int) ($form->getValue('language', null, '*') === '*'),
-);
+];
 
 // Load JavaScript message titles
 Text::script('ERROR');
 Text::script('WARNING');
 Text::script('NOTICE');
 Text::script('MESSAGE');
+Text::script('SUCCESS');
 Text::script('JGLOBAL_ASSOC_NOT_POSSIBLE');
 Text::script('JGLOBAL_ASSOCIATIONS_RESET_WARNING');
 

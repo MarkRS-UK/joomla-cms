@@ -12,6 +12,10 @@ namespace Joomla\CMS\Feed;
 use Joomla\CMS\Http\HttpFactory;
 use Joomla\Registry\Registry;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * Feed factory class.
  *
@@ -23,7 +27,7 @@ class FeedFactory
      * @var    array  The list of registered parser classes for feeds.
      * @since  3.1.4
      */
-    protected $parsers = array('rss' => 'Joomla\\CMS\\Feed\\Parser\\RssParser', 'feed' => 'Joomla\\CMS\\Feed\\Parser\\AtomParser');
+    protected $parsers = ['rss' => 'Joomla\\CMS\\Feed\\Parser\\RssParser', 'feed' => 'Joomla\\CMS\\Feed\\Parser\\AtomParser'];
 
     /**
      * Method to load a URI into the feed reader for parsing.
@@ -55,12 +59,12 @@ class FeedFactory
                 throw new \RuntimeException('Unable to open the feed.', $e->getCode(), $e);
             }
 
-            if ($response->code != 200) {
+            if ($response->getStatusCode() != 200) {
                 throw new \RuntimeException('Unable to open the feed.');
             }
 
             // Set the value to the XMLReader parser
-            if (!$reader->XML($response->body, null, LIBXML_NOERROR | LIBXML_ERR_NONE | LIBXML_NOWARNING)) {
+            if (!$reader->XML((string) $response->getBody(), null, LIBXML_NOERROR | LIBXML_ERR_NONE | LIBXML_NOWARNING)) {
                 throw new \RuntimeException('Unable to parse the feed.');
             }
         }

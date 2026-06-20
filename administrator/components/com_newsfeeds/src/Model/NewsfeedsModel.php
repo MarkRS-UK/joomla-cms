@@ -16,7 +16,12 @@ use Joomla\CMS\Language\Associations;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\ListModel;
 use Joomla\Database\ParameterType;
+use Joomla\Database\QueryInterface;
 use Joomla\Utilities\ArrayHelper;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Methods supporting a list of newsfeed records.
@@ -28,16 +33,16 @@ class NewsfeedsModel extends ListModel
     /**
      * Constructor.
      *
-     * @param   array                $config   An optional associative array of configuration settings.
-     * @param   MVCFactoryInterface  $factory  The factory.
+     * @param   array                 $config   An optional associative array of configuration settings.
+     * @param   ?MVCFactoryInterface  $factory  The factory.
      *
      * @see    \Joomla\CMS\MVC\Model\BaseDatabaseModel
      * @since   3.2
      */
-    public function __construct($config = array(), MVCFactoryInterface $factory = null)
+    public function __construct($config = [], ?MVCFactoryInterface $factory = null)
     {
         if (empty($config['filter_fields'])) {
-            $config['filter_fields'] = array(
+            $config['filter_fields'] = [
                 'id', 'a.id',
                 'name', 'a.name',
                 'alias', 'a.alias',
@@ -57,7 +62,7 @@ class NewsfeedsModel extends ListModel
                 'tag',
                 'level', 'c.level',
                 'tag',
-            );
+            ];
 
             if (Associations::isEnabled()) {
                 $config['filter_fields'][] = 'association';
@@ -83,10 +88,10 @@ class NewsfeedsModel extends ListModel
     {
         $app = Factory::getApplication();
 
-        $forcedLanguage = $app->input->get('forcedLanguage', '', 'cmd');
+        $forcedLanguage = $app->getInput()->get('forcedLanguage', '', 'cmd');
 
         // Adjust the context to support modal layouts.
-        if ($layout = $app->input->get('layout')) {
+        if ($layout = $app->getInput()->get('layout')) {
             $this->context .= '.' . $layout;
         }
 
@@ -136,14 +141,14 @@ class NewsfeedsModel extends ListModel
     /**
      * Build an SQL query to load the list data.
      *
-     * @return  \Joomla\Database\DatabaseQuery
+     * @return  QueryInterface
      */
     protected function getListQuery()
     {
         // Create a new query object.
         $db    = $this->getDatabase();
         $query = $db->getQuery(true);
-        $user  = Factory::getUser();
+        $user  = $this->getCurrentUser();
 
         // Select the required fields from the table.
         $query->select(
@@ -165,6 +170,7 @@ class NewsfeedsModel extends ListModel
                     $db->quoteName('a.language'),
                     $db->quoteName('a.publish_up'),
                     $db->quoteName('a.publish_down'),
+                    $db->quoteName('a.modified_by'),
                 ]
             )
         )
@@ -264,7 +270,13 @@ class NewsfeedsModel extends ListModel
         }
 
         if ($tag && \is_array($tag)) {
-            $tag = ArrayHelper::toInteger($tag);
+            $tag         = ArrayHelper::toInteger($tag);
+            $includeNone = false;
+
+            if (\in_array(0, $tag)) {
+                $tag         = array_filter($tag);
+                $includeNone = true;
+            }
 
             $subQuery = $db->getQuery(true)
                 ->select('DISTINCT ' . $db->quoteName('content_item_id'))
@@ -277,16 +289,48 @@ class NewsfeedsModel extends ListModel
                 );
 
             $query->join(
-                'INNER',
+                $includeNone ? 'LEFT' : 'INNER',
                 '(' . $subQuery . ') AS ' . $db->quoteName('tagmap'),
                 $db->quoteName('tagmap.content_item_id') . ' = ' . $db->quoteName('a.id')
             );
-        } elseif ($tag = (int) $tag) {
-            $query->join(
-                'INNER',
-                $db->quoteName('#__contentitem_tag_map', 'tagmap'),
-                $db->quoteName('tagmap.content_item_id') . ' = ' . $db->quoteName('a.id')
-            )
+
+            if ($includeNone) {
+                $subQuery2 = $db->getQuery(true)
+                    ->select('DISTINCT ' . $db->quoteName('content_item_id'))
+                    ->from($db->quoteName('#__contentitem_tag_map'))
+                    ->where($db->quoteName('type_alias') . ' = ' . $db->quote('com_newsfeeds.newsfeed'));
+                $query->join(
+                    'LEFT',
+                    '(' . $subQuery2 . ') AS ' . $db->quoteName('tagmap2'),
+                    $db->quoteName('tagmap2.content_item_id') . ' = ' . $db->quoteName('a.id')
+                )
+                ->where(
+                    '(' . $db->quoteName('tagmap.content_item_id') . ' IS NOT NULL OR '
+                    . $db->quoteName('tagmap2.content_item_id') . ' IS NULL)'
+                );
+            }
+        } elseif (is_numeric($tag)) {
+            $tag = (int) $tag;
+
+            if ($tag === 0) {
+                $subQuery = $db->getQuery(true)
+                    ->select('DISTINCT ' . $db->quoteName('content_item_id'))
+                    ->from($db->quoteName('#__contentitem_tag_map'))
+                    ->where($db->quoteName('type_alias') . ' = ' . $db->quote('com_newsfeeds.newsfeed'));
+
+                // Only show newsfeeds without tags
+                $query->join(
+                    'LEFT',
+                    '(' . $subQuery . ') AS ' . $db->quoteName('tagmap'),
+                    $db->quoteName('tagmap.content_item_id') . ' = ' . $db->quoteName('a.id')
+                )
+                ->where($db->quoteName('tagmap.content_item_id') . ' IS NULL');
+            } else {
+                $query->join(
+                    'INNER',
+                    $db->quoteName('#__contentitem_tag_map', 'tagmap'),
+                    $db->quoteName('tagmap.content_item_id') . ' = ' . $db->quoteName('a.id')
+                )
                 ->where(
                     [
                         $db->quoteName('tagmap.tag_id') . ' = :tag',
@@ -294,6 +338,7 @@ class NewsfeedsModel extends ListModel
                     ]
                 )
                 ->bind(':tag', $tag, ParameterType::INTEGER);
+            }
         }
 
         // Add the list ordering clause.

@@ -15,9 +15,12 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Session\Session;
 use Joomla\CMS\Uri\Uri;
-use Joomla\Event\DispatcherInterface;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Module\Quickicon\Administrator\Event\QuickIconsEvent;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Joomla! update notification plugin
@@ -60,17 +63,16 @@ class Joomlaupdate extends CMSPlugin implements SubscriberInterface
     /**
      * Constructor
      *
-     * @param   DispatcherInterface  $subject   The object to observe
-     * @param   Document             $document  The document
-     * @param   array                $config    An optional associative array of configuration settings.
-     *                                          Recognized key values include 'name', 'group', 'params', 'language'
-     *                                          (this list is not meant to be comprehensive).
+     * @param   Document             $document     The document
+     * @param   array                $config       An optional associative array of configuration settings.
+     *                                             Recognized key values include 'name', 'group', 'params', 'language'
+     *                                             (this list is not meant to be comprehensive).
      *
      * @since   4.0.0
      */
-    public function __construct($subject, Document $document, $config = array())
+    public function __construct(Document $document, array $config = [])
     {
-        parent::__construct($subject, $config);
+        parent::__construct($config);
 
         $this->document = $document;
     }
@@ -104,6 +106,7 @@ class Joomlaupdate extends CMSPlugin implements SubscriberInterface
         Text::script('ERROR');
         Text::script('INFO');
         Text::script('WARNING');
+        Text::script('SUCCESS');
 
         $this->document->addScriptOptions(
             'js-joomla-update',

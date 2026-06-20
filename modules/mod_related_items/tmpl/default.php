@@ -13,6 +13,10 @@ defined('_JEXEC') or die;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 
+if (!$list) {
+    return;
+}
+
 ?>
 <ul class="mod-relateditems relateditems mod-list">
 <?php foreach ($list as $item) : ?>
@@ -21,7 +25,7 @@ use Joomla\CMS\Language\Text;
         <?php if ($showDate) {
             echo HTMLHelper::_('date', $item->created, Text::_('DATE_FORMAT_LC4')) . ' - ';
         } ?>
-        <?php echo $item->title; ?></a>
+        <?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?></a>
 </li>
 <?php endforeach; ?>
 </ul>

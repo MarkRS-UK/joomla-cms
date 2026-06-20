@@ -11,9 +11,12 @@ namespace Joomla\CMS\Form\Field;
 
 use Joomla\CMS\Form\FormField;
 use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\UCM\UCMType;
-use Joomla\Database\DatabaseQuery;
 use Joomla\Database\ParameterType;
+use Joomla\Database\QueryInterface;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Ordering field.
@@ -112,7 +115,7 @@ class OrderingField extends FormField
      */
     protected function getInput()
     {
-        $html = array();
+        $html = [];
         $attr = '';
 
         // Initialize some field attributes.
@@ -142,15 +145,22 @@ class OrderingField extends FormField
     /**
      * Builds the query for the ordering list.
      *
-     * @return  DatabaseQuery  The query for the ordering form field
+     * @return  QueryInterface  The query for the ordering form field
      *
      * @since   3.2
      */
     protected function getQuery()
     {
-        $categoryId   = (int) $this->form->getValue('catid');
-        $ucmType      = new UCMType();
-        $ucmRow       = $ucmType->getType($ucmType->getTypeId($this->contentType));
+        $categoryId = (int) $this->form->getValue('catid');
+        $db         = $this->getDatabase();
+        $query      = $db->getQuery(true)
+            ->select($db->quoteName('ct') . '.*')
+            ->from($db->quoteName('#__content_types', 'ct'))
+            ->where($db->quoteName('ct.type_alias') . ' = :alias')
+            ->bind(':alias', $this->contentType);
+
+        $db->setQuery($query);
+        $ucmRow       = $db->loadObject();
         $ucmMapCommon = json_decode($ucmRow->field_mappings)->common;
 
         if (\is_object($ucmMapCommon)) {
@@ -161,7 +171,6 @@ class OrderingField extends FormField
             $title    = $ucmMapCommon[0]->core_title;
         }
 
-        $db    = $this->getDatabase();
         $query = $db->getQuery(true);
         $query->select([$db->quoteName($ordering, 'value'), $db->quoteName($title, 'text')])
             ->from($db->quoteName(json_decode($ucmRow->table)->special->dbtable))

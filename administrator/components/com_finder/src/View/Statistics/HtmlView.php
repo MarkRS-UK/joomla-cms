@@ -10,8 +10,12 @@
 
 namespace Joomla\Component\Finder\Administrator\View\Statistics;
 
-use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\Component\Finder\Administrator\Model\StatisticsModel;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Statistics view class for Finder.
@@ -40,13 +44,12 @@ class HtmlView extends BaseHtmlView
      */
     public function display($tpl = null)
     {
-        // Load the view data.
-        $this->data = $this->get('Data');
+        /** @var StatisticsModel $model */
+        $model = $this->getModel();
+        $model->setUseExceptions(true);
 
-        // Check for errors.
-        if (count($errors = $this->get('Errors'))) {
-            throw new GenericDataException(implode("\n", $errors), 500);
-        }
+        // Load the view data.
+        $this->data = $model->getData();
 
         parent::display($tpl);
     }

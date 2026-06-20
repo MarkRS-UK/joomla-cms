@@ -15,8 +15,9 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 
+/** @var \Joomla\Component\Tags\Site\View\Tag\HtmlView $this */
 /** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
-$wa = $this->document->getWebAssetManager();
+$wa = $this->getDocument()->getWebAssetManager();
 $wa->useScript('com_tags.tag-list');
 
 $listOrder = $this->escape($this->state->get('list.ordering'));
@@ -34,7 +35,7 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
                     name="filter-search"
                     id="filter-search"
                     value="<?php echo $this->escape($this->state->get('list.filter')); ?>"
-                    class="inputbox" onchange="document.adminForm.submit();"
+                    class="inputbox"
                     placeholder="<?php echo Text::_('COM_TAGS_TITLE_FILTER_LABEL'); ?>"
                 >
                 <button type="submit" name="filter_submit" class="btn btn-primary"><?php echo Text::_('JGLOBAL_FILTER_BUTTON'); ?></button>
@@ -57,26 +58,24 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
             </div>
         <?php else : ?>
             <table class="com-tags-tag-list__category category table table-striped table-bordered table-hover">
-                <?php if ($this->params->get('show_headings')) : ?>
-                    <thead>
-                        <tr>
-                            <th scope="col" id="categorylist_header_title">
-                                <?php echo HTMLHelper::_('grid.sort', 'JGLOBAL_TITLE', 'c.core_title', $listDirn, $listOrder); ?>
+                <thead<?php echo $this->params->get('show_headings', '1') ? '' : ' class="visually-hidden"'; ?>>
+                    <tr>
+                        <th scope="col" id="categorylist_header_title">
+                            <?php echo HTMLHelper::_('grid.sort', 'JGLOBAL_TITLE', 'c.core_title', $listDirn, $listOrder); ?>
+                        </th>
+                        <?php if ($date = $this->params->get('tag_list_show_date')) : ?>
+                            <th scope="col" id="categorylist_header_date">
+                                <?php if ($date === 'created') : ?>
+                                    <?php echo HTMLHelper::_('grid.sort', 'COM_TAGS_' . $date . '_DATE', 'c.core_created_time', $listDirn, $listOrder); ?>
+                                <?php elseif ($date === 'modified') : ?>
+                                    <?php echo HTMLHelper::_('grid.sort', 'COM_TAGS_' . $date . '_DATE', 'c.core_modified_time', $listDirn, $listOrder); ?>
+                                <?php elseif ($date === 'published') : ?>
+                                    <?php echo HTMLHelper::_('grid.sort', 'COM_TAGS_' . $date . '_DATE', 'c.core_publish_up', $listDirn, $listOrder); ?>
+                                <?php endif; ?>
                             </th>
-                            <?php if ($date = $this->params->get('tag_list_show_date')) : ?>
-                                <th scope="col" id="categorylist_header_date">
-                                    <?php if ($date === 'created') : ?>
-                                        <?php echo HTMLHelper::_('grid.sort', 'COM_TAGS_' . $date . '_DATE', 'c.core_created_time', $listDirn, $listOrder); ?>
-                                    <?php elseif ($date === 'modified') : ?>
-                                        <?php echo HTMLHelper::_('grid.sort', 'COM_TAGS_' . $date . '_DATE', 'c.core_modified_time', $listDirn, $listOrder); ?>
-                                    <?php elseif ($date === 'published') : ?>
-                                        <?php echo HTMLHelper::_('grid.sort', 'COM_TAGS_' . $date . '_DATE', 'c.core_publish_up', $listDirn, $listOrder); ?>
-                                    <?php endif; ?>
-                                </th>
-                            <?php endif; ?>
-                        </tr>
-                    </thead>
-                <?php endif; ?>
+                        <?php endif; ?>
+                    </tr>
+                </thead>
                 <tbody>
                     <?php foreach ($this->items as $i => $item) : ?>
                         <?php if ($item->core_state == 0) : ?>

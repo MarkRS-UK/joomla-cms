@@ -10,11 +10,13 @@
 
 namespace Joomla\Component\Banners\Administrator\View\Download;
 
-use Exception;
 use Joomla\CMS\Form\Form;
-use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\Component\Banners\Administrator\Model\DownloadModel;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * View class for download a list of tracks.
@@ -40,18 +42,15 @@ class HtmlView extends BaseHtmlView
      *
      * @since   1.6
      *
-     * @throws  Exception
+     * @throws  \Exception
      */
     public function display($tpl = null): void
     {
         /** @var DownloadModel $model */
-        $model      = $this->getModel();
-        $this->form = $model->getForm();
+        $model = $this->getModel();
+        $model->setUseExceptions(true);
 
-        // Check for errors.
-        if (\count($errors = $this->get('Errors'))) {
-            throw new GenericDataException(implode("\n", $errors), 500);
-        }
+        $this->form = $model->getForm();
 
         parent::display($tpl);
     }

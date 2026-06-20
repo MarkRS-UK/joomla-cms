@@ -14,6 +14,10 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Router\Route;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * Reset controller class for Users.
  *
@@ -35,13 +39,13 @@ class RemindController extends BaseController
 
         /** @var \Joomla\Component\Users\Site\Model\RemindModel $model */
         $model = $this->getModel('Remind', 'Site');
-        $data  = $this->input->post->get('jform', array(), 'array');
+        $data  = $this->input->post->get('jform', [], 'array');
 
         // Submit the password reset request.
         $return = $model->processRemindRequest($data);
 
         // Check for a hard error.
-        if ($return == false && JDEBUG) {
+        if (!$return && JDEBUG) {
             // The request failed.
             // Go back to the request form.
             $message = Text::sprintf('COM_USERS_REMIND_REQUEST_FAILED', $model->getError());

@@ -25,14 +25,16 @@ use Joomla\CMS\Session\Session;
 use Joomla\Component\Content\Administrator\Helper\ContentHelper;
 use Joomla\Utilities\ArrayHelper;
 
+/** @var \Joomla\Component\Content\Administrator\View\Featured\HtmlView $this */
+
 /** @var \Joomla\CMS\WebAsset\WebAssetManager $wa */
-$wa = $this->document->getWebAssetManager();
+$wa = $this->getDocument()->getWebAssetManager();
 $wa->useScript('table.columns')
     ->useScript('multiselect');
 
 $app       = Factory::getApplication();
-$user      = Factory::getUser();
-$userId    = $user->get('id');
+$user      = $this->getCurrentUser();
+$userId    = $user->id;
 $listOrder = $this->escape($this->state->get('list.ordering'));
 $listDirn  = $this->escape($this->state->get('list.direction'));
 $saveOrder = $listOrder == 'fp.ordering';
@@ -76,7 +78,7 @@ $assoc = Associations::isEnabled();
             <div id="j-main-container" class="j-main-container">
                 <?php
                 // Search tools bar
-                echo LayoutHelper::render('joomla.searchtools.default', array('view' => $this));
+                echo LayoutHelper::render('joomla.searchtools.default', ['view' => $this]);
                 ?>
                 <?php if (empty($this->items)) : ?>
                     <div class="alert alert-info">
@@ -201,7 +203,7 @@ $assoc = Associations::isEnabled();
                                     'title' => Text::_($item->stage_title),
                                     'tip_content' => Text::sprintf('JWORKFLOW', Text::_($item->workflow_title)),
                                     'id' => 'workflow-' . $item->id,
-                                    'task' => 'articles.runTransitions'
+                                    'task' => 'articles.runTransition'
                                     ];
 
                                     echo (new TransitionButton($options))
@@ -265,7 +267,7 @@ $assoc = Associations::isEnabled();
                                                     echo ' &#187; ';
                                                 endif;
                                             endif;
-                                            if (Factory::getLanguage()->isRtl()) {
+                                            if ($this->getLanguage()->isRtl()) {
                                                 if ($canEditCat || $canEditOwnCat) :
                                                     echo '<a href="' . $CurrentCatUrl . '" title="' . $EditCatTxt . '">';
                                                 endif;
@@ -313,12 +315,12 @@ $assoc = Associations::isEnabled();
                                     <?php echo $this->escape($item->access_level); ?>
                                 </td>
                                 <td class="small d-none d-md-table-cell">
-                                    <?php if ((int) $item->created_by != 0) : ?>
+                                    <?php if (!empty($item->author_name)) : ?>
                                         <a href="<?php echo Route::_('index.php?option=com_users&task=user.edit&id=' . (int) $item->created_by); ?>">
                                             <?php echo $this->escape($item->author_name); ?>
                                         </a>
                                     <?php else : ?>
-                                        <?php echo Text::_('JNONE'); ?>
+                                        [ <?php echo Text::_('JNONE'); ?> ]
                                     <?php endif; ?>
                                     <?php if ($item->created_by_alias) : ?>
                                         <div class="smallsub"><?php echo Text::sprintf('JGLOBAL_LIST_ALIAS', $this->escape($item->created_by_alias)); ?></div>
@@ -356,7 +358,7 @@ $assoc = Associations::isEnabled();
                                         </span>
                                     </td>
                                     <td class="d-none d-md-table-cell text-center">
-                                        <span class="badge bg-warning text-dark">
+                                        <span class="badge bg-warning">
                                             <?php echo (int) $item->rating; ?>
                                         </span>
                                     </td>
@@ -375,10 +377,10 @@ $assoc = Associations::isEnabled();
                     <?php echo HTMLHelper::_(
                         'bootstrap.renderModal',
                         'stageModal',
-                        array(
+                        [
                             'title'  => Text::_('JTOOLBAR_CHANGE_STATUS'),
                             'footer' => $this->loadTemplate('stage_footer'),
-                        ),
+                        ],
                         $this->loadTemplate('stage_body')
                     ); ?>
 

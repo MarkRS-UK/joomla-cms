@@ -63,7 +63,7 @@ if ($meter) {
     $class = 'js-password-strength ' . $class;
 
     if ($forcePassword) {
-        $class = $class . ' meteredPassword';
+        $class .= ' meteredPassword';
     }
 }
 
@@ -71,6 +71,7 @@ $wa->useScript('field.passwordview');
 
 Text::script('JFIELD_PASSWORD_INDICATE_INCOMPLETE');
 Text::script('JFIELD_PASSWORD_INDICATE_COMPLETE');
+Text::script('JFIELD_PASSWORD_SPACES_IN_PASSWORD');
 Text::script('JSHOWPASSWORD');
 Text::script('JHIDEPASSWORD');
 
@@ -86,7 +87,7 @@ if ($lock) {
 $ariaDescribedBy = $rules ? $name . '-rules ' : '';
 $ariaDescribedBy .= !empty($description) ? (($id ?: $name) . '-desc') : '';
 
-$attributes = array(
+$attributes = [
     strlen($hint) ? 'placeholder="' . htmlspecialchars($hint, ENT_COMPAT, 'UTF-8') . '"' : '',
     !empty($autocomplete) ? 'autocomplete="' . $autocomplete . '"' : '',
     !empty($class) ? 'class="form-control ' . $class . '"' : 'class="form-control"',
@@ -104,7 +105,7 @@ $attributes = array(
     !empty($minLowercase) ? 'data-min-lowercase="' . $minLowercase . '"' : '',
     !empty($forcePassword) ? 'data-min-force="' . $forcePassword . '"' : '',
     $dataAttribute,
-);
+];
 
 if ($rules) {
     $requirements = [];

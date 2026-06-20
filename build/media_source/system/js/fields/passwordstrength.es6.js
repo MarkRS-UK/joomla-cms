@@ -7,6 +7,8 @@
  *
  * Copyright (c) 2014 Thomas Kjærgaard
  *
+ * ADAPTED BY: Joomla for use in the Joomla! CMS
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -47,10 +49,9 @@ class PasswordStrength {
     score += this.constructor.calc(value, /[a-z]/g, this.lowercase, mods);
     score += this.constructor.calc(value, /[A-Z]/g, this.uppercase, mods);
     score += this.constructor.calc(value, /[0-9]/g, this.numbers, mods);
-    // eslint-disable-next-line no-useless-escape
     score += this.constructor.calc(
       value,
-      /[$!#?=;:*\-_€%&()`´]/g,
+      /[@$!#?=;:*\-_€%&()`´+[\]{}'"\\|,.<>/~^]/g,
       this.special,
       mods,
     );
@@ -107,21 +108,28 @@ class PasswordStrength {
     const i = meter.getAttribute('id').replace(/^\D+/g, '');
     const label = element.parentNode.parentNode.querySelector(`#password-${i}`);
 
-    if (score === 100) {
-      label.innerText = Joomla.Text._('JFIELD_PASSWORD_INDICATE_COMPLETE');
-    } else {
-      label.innerText = Joomla.Text._('JFIELD_PASSWORD_INDICATE_INCOMPLETE');
+    if (element.value !== element.value.trim()) {
+      label.innerText = Joomla.Text._('JFIELD_PASSWORD_SPACES_IN_PASSWORD');
+      meter.value = 0;
+      return;
     }
-    meter.value = score;
 
-    if (!element.value.length) {
-      label.innerText = '';
-      element.setAttribute('required', '');
+    if (label) {
+      if (score === 100) {
+        label.innerText = Joomla.Text._('JFIELD_PASSWORD_INDICATE_COMPLETE');
+      } else {
+        label.innerText = Joomla.Text._('JFIELD_PASSWORD_INDICATE_INCOMPLETE');
+      }
+      meter.value = score;
+      if (!element.value.length) {
+        label.innerText = '';
+        element.setAttribute('required', '');
+      }
     }
   };
 
   document.addEventListener('DOMContentLoaded', () => {
-    const fields = [].slice.call(document.querySelectorAll('.js-password-strength'));
+    const fields = document.querySelectorAll('.js-password-strength');
 
     // Loop  through the fields
     fields.forEach((field, index) => {
@@ -155,14 +163,16 @@ class PasswordStrength {
       }
 
       // Add a listener for input data change
-      field.addEventListener('keyup', ({ target }) => {
-        getMeter(target);
-      });
+      field.addEventListener('keyup', ({ target }) => getMeter(target));
     });
 
     // Set a handler for the validation script
     if (fields[0]) {
       document.formvalidator.setHandler('password-strength', (value) => {
+        if (value !== value.trim()) {
+          return false;
+        }
+
         const strengthElements = document.querySelectorAll('.js-password-strength');
         const minLength = strengthElements[0].getAttribute('data-min-length');
         const minIntegers = strengthElements[0].getAttribute('data-min-integers');
@@ -178,12 +188,7 @@ class PasswordStrength {
           length: minLength || 12,
         });
 
-        const score = strength.getScore(value);
-        if (score === 100) {
-          return true;
-        }
-
-        return false;
+        return strength.getScore(value) === 100;
       });
     }
   });

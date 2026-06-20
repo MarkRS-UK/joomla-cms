@@ -17,9 +17,12 @@ use Joomla\CMS\Helper\CMSHelper;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Versioning\VersionableTableInterface;
 use Joomla\CMS\Versioning\Versioning;
-use Joomla\Event\DispatcherInterface;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Filter\InputFilter;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Implements the Versionable behaviour which allows extensions to automatically support content history for their content items.
@@ -64,16 +67,15 @@ final class Versionable extends CMSPlugin implements SubscriberInterface
     /**
      * Constructor.
      *
-     * @param   DispatcherInterface   $dispatcher   The dispatcher
      * @param   array                 $config       An optional associative array of configuration settings
      * @param   InputFilter           $filter       The input filter
      * @param   CMSHelper             $helper       The CMS helper
      *
      * @since   4.0.0
      */
-    public function __construct(DispatcherInterface $dispatcher, array $config, InputFilter $filter, CMSHelper $helper)
+    public function __construct(array $config, InputFilter $filter, CMSHelper $helper)
     {
-        parent::__construct($dispatcher, $config);
+        parent::__construct($config);
 
         $this->filter = $filter;
         $this->helper = $helper;
@@ -99,7 +101,7 @@ final class Versionable extends CMSPlugin implements SubscriberInterface
             return;
         }
 
-        if (!(is_object($table) && $table instanceof VersionableTableInterface)) {
+        if (!(\is_object($table) && $table instanceof VersionableTableInterface)) {
             return;
         }
 
@@ -111,10 +113,10 @@ final class Versionable extends CMSPlugin implements SubscriberInterface
             return;
         }
 
-        $id     = $table->getId();
-        $data   = $this->helper->getDataObject($table);
-        $input  = $this->getApplication()->input;
-        $jform  = $input->get('jform', array(), 'array');
+        $id          = $table->getId();
+        $data        = $this->helper->getDataObject($table);
+        $input       = $this->getApplication()->getInput();
+        $jform       = $input->get('jform', [], 'array');
         $versionNote = '';
 
         if (isset($jform['version_note'])) {
@@ -139,7 +141,7 @@ final class Versionable extends CMSPlugin implements SubscriberInterface
         /** @var VersionableTableInterface $table */
         $table = $event['subject'];
 
-        if (!(is_object($table) && $table instanceof VersionableTableInterface)) {
+        if (!(\is_object($table) && $table instanceof VersionableTableInterface)) {
             return;
         }
 

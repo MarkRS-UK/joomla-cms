@@ -12,6 +12,10 @@ namespace Joomla\Component\Users\Api\Controller;
 
 use Joomla\CMS\MVC\Controller\ApiController;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * The levels controller
  *
@@ -34,4 +38,22 @@ class LevelsController extends ApiController
      * @since  4.0.0
      */
     protected $default_view = 'levels';
+
+    /**
+     * Method to allow extended classes to manipulate the data to be saved for an extension.
+     *
+     * @param   array  $data  An array of input data.
+     *
+     * @return  array
+     *
+     * @since   __DEPLOY_VERSION__
+     */
+    protected function preprocessSaveData(array $data): array
+    {
+        if ($this->input->getMethod() === 'PATCH') {
+            $data['rules'] = json_decode($data['rules'], true);
+        }
+
+        return $data;
+    }
 }

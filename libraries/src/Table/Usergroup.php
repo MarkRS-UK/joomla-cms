@@ -10,9 +10,14 @@
 namespace Joomla\CMS\Table;
 
 use Joomla\CMS\Language\Text;
-use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
 use Joomla\Database\Exception\ExecutionFailureException;
 use Joomla\Database\ParameterType;
+use Joomla\Event\DispatcherInterface;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Usergroup table class.
@@ -24,13 +29,14 @@ class Usergroup extends Table
     /**
      * Constructor
      *
-     * @param   DatabaseDriver  $db  Database driver object.
+     * @param   DatabaseInterface     $db          Database connector object
+     * @param   ?DispatcherInterface  $dispatcher  Event dispatcher for this table
      *
      * @since   1.7.0
      */
-    public function __construct(DatabaseDriver $db)
+    public function __construct(DatabaseInterface $db, ?DispatcherInterface $dispatcher = null)
     {
-        parent::__construct('#__usergroups', 'id', $db);
+        parent::__construct('#__usergroups', 'id', $db, $dispatcher);
     }
 
     /**
@@ -66,7 +72,7 @@ class Usergroup extends Table
 
         // Check for a duplicate parent_id, title.
         // There is a unique index on the (parent_id, title) field in the table.
-        $db       = $this->_db;
+        $db       = $this->getDatabase();
         $parentId = (int) $this->parent_id;
         $title    = trim($this->title);
         $id       = (int) $this->id;
@@ -89,7 +95,7 @@ class Usergroup extends Table
 
         // We do not allow to move non public to root and public to non-root
         if (!empty($this->id)) {
-            $table = self::getInstance('Usergroup', 'JTable', array('dbo' => $this->getDbo()));
+            $table = new self($db, $this->getDispatcher());
 
             $table->load($this->id);
 
@@ -107,7 +113,7 @@ class Usergroup extends Table
 
         // The new parent_id has to be a valid group
         if ($this->parent_id) {
-            $table = self::getInstance('Usergroup', 'JTable', array('dbo' => $this->getDbo()));
+            $table = new self($db, $this->getDispatcher());
             $table->load($this->parent_id);
 
             if ($table->id != $this->parent_id) {
@@ -133,7 +139,7 @@ class Usergroup extends Table
     public function rebuild($parentId = 0, $left = 0)
     {
         // Get the database object
-        $db       = $this->_db;
+        $db       = $this->getDatabase();
         $query    = $db->getQuery(true);
         $parentId = (int) $parentId;
 
@@ -152,9 +158,9 @@ class Usergroup extends Table
         $right = $left + 1;
 
         // Execute this function recursively over all children
-        for ($i = 0, $n = \count($children); $i < $n; $i++) {
+        foreach ($children as $child) {
             // $right is the current right value, which is incremented on recursion return
-            $right = $this->rebuild($children[$i], $right);
+            $right = $this->rebuild($child, $right);
 
             // If there is an update failure, return false to break out of the recursion
             if ($right === false) {
@@ -180,7 +186,7 @@ class Usergroup extends Table
         // If there is an update failure, return false to break out of the recursion
         try {
             $db->execute();
-        } catch (ExecutionFailureException $e) {
+        } catch (ExecutionFailureException) {
             return false;
         }
 
@@ -236,7 +242,7 @@ class Usergroup extends Table
             throw new \UnexpectedValueException('Left-Right data inconsistency. Cannot delete usergroup.');
         }
 
-        $db = $this->_db;
+        $db = $this->getDatabase();
 
         $lft = (int) $this->lft;
         $rgt = (int) $this->rgt;
@@ -267,7 +273,7 @@ class Usergroup extends Table
         $this->rebuild();
 
         // Delete the usergroup in view levels
-        $replace = array();
+        $replace = [];
 
         foreach ($ids as $id) {
             $replace[] = ',' . $db->quote("[$id,") . ',' . $db->quote('[');

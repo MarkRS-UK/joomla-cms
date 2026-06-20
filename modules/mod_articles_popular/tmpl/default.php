@@ -10,7 +10,10 @@
 
 defined('_JEXEC') or die;
 
-if (!$list) {
+if (!isset($list)) {
+    if (isset($hitsDisabledMessage)) {
+        echo $hitsDisabledMessage;
+    }
     return;
 }
 
@@ -20,7 +23,7 @@ if (!$list) {
     <li itemscope itemtype="https://schema.org/Article">
         <a href="<?php echo $item->link; ?>" itemprop="url">
             <span itemprop="name">
-                <?php echo $item->title; ?>
+                <?php echo htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'); ?>
             </span>
         </a>
     </li>

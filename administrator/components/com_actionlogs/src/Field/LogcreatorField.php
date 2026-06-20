@@ -12,10 +12,16 @@ namespace Joomla\Component\Actionlogs\Administrator\Field;
 
 use Joomla\CMS\Form\Field\ListField;
 
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
 /**
  * Field to load a list of all users that have logged actions
  *
  * @since  3.9.0
+ *
+ * @deprecated  5.3  will be removed in 7.0 without replacement
  */
 class LogcreatorField extends ListField
 {
