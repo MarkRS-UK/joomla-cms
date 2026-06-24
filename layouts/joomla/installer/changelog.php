@@ -14,61 +14,61 @@ use Joomla\CMS\Language\Text;
 
         // If there are no items, continue
 if (empty($displayData)) {
-	return;
+    return;
 }
 
 foreach($displayData as $key => $row) {
-	?>
-	<div id="<?php echo $key?>" class="changelog">
-		<div class="changelog__item justify-content-xxl-around">
-			<span><?php echo $key; ?></span>
-		</div>
-	</div>
-	<?php
-	array_walk(
-		$row,
-		function ($item, $changeType) {
+    ?>
+    <div id="<?php echo $key?>" class="changelog">
+        <div class="changelog__item justify-content-xxl-around">
+            <span><?php echo $key; ?></span>
+        </div>
+    </div>
+    <?php
+    array_walk(
+        $row,
+        function ($item, $changeType) {
 
-			switch ($changeType) {
-				case 'security':
-					$class = 'bg-danger';
-					break;
-				case 'fix':
-					$class = 'bg-dark';
-					break;
-				case 'language':
-					$class = 'bg-primary';
-					break;
-				case 'addition':
-					$class = 'bg-success';
-					break;
-				case 'change':
-					$class = 'bg-warning';
-					break;
-				case 'remove':
-					$class = 'bg-secondary';
-					break;
-				default:
-				case 'note':
-					$class = 'bg-info';
-					break;
-			}
+            switch ($changeType) {
+                case 'security':
+                    $class = 'bg-danger';
+                    break;
+                case 'fix':
+                    $class = 'bg-dark';
+                    break;
+                case 'language':
+                    $class = 'bg-primary';
+                    break;
+                case 'addition':
+                    $class = 'bg-success';
+                    break;
+                case 'change':
+                    $class = 'bg-warning';
+                    break;
+                case 'remove':
+                    $class = 'bg-secondary';
+                    break;
+                default:
+                case 'note':
+                    $class = 'bg-info';
+                    break;
+            }
 
-			?>
+            ?>
 
-			<div class="changelog">
-				<div class="changelog__item">
-					<div class="changelog__tag">
-						<span class="badge <?php echo $class; ?>"><?php echo Text::_('COM_INSTALLER_CHANGELOG_' . $changeType); ?></span>
-					</div>
-					<div class="changelog__list">
-						<ul>
-							<li><?php echo implode('</li><li>', $item); ?></li>
-						</ul>
-					</div>
-				</div>
-			</div>
-			<?php
-		}
-	);
+            <div class="changelog">
+                <div class="changelog__item">
+                    <div class="changelog__tag">
+                        <span class="badge <?php echo $class; ?>"><?php echo Text::_('COM_INSTALLER_CHANGELOG_' . $changeType); ?></span>
+                    </div>
+                    <div class="changelog__list">
+                        <ul>
+                            <li><?php echo implode('</li><li>', $item); ?></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
+    );
 }

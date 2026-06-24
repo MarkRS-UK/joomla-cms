@@ -272,7 +272,7 @@ class Changelog
                 $this->items                         = [];
                 break;
             case 'CHANGELOG':
-				$this->changes[$this->currentChangelog->version->data] = $this->currentChangelog;
+                $this->changes[$this->currentChangelog->version->data] = $this->currentChangelog;
                 break;
             case 'CHANGELOGS':
                 break;
