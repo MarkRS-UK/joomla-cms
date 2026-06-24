@@ -457,7 +457,7 @@ class ManageModel extends InstallerModel
 
             $items = [];
             foreach (array_keys($entries) as $name) {
-                if (\property_exists($entry, $name)) {
+                if (property_exists($entry, $name)) {
                     $items[$name] = $entry->$name->data;
                 }
             }
