@@ -455,10 +455,10 @@ class ManageModel extends InstallerModel
                 'note'     => [],
             ];
 
-                $items = [];
+            $items = [];
             foreach (array_keys($entries) as $name) {
-                    if (\property_exists($entry, $name)) {
-                        $items[$name] = $entry->$name->data;
+                if (\property_exists($entry, $name)) {
+                    $items[$name] = $entry->$name->data;
                 }
             }
             if (\count($items)) {
