@@ -444,24 +444,24 @@ class ManageModel extends InstallerModel
 
         $modified = [];
         foreach ($changelog->changes as $key => $entry) {
-        // Read all the entries
-        $entries = [
-            'security' => [],
-            'fix'      => [],
-            'addition' => [],
-            'change'   => [],
-            'remove'   => [],
-            'language' => [],
-            'note'     => [],
-        ];
+            // Read all the entries
+            $entries = [
+                'security' => [],
+                'fix'      => [],
+                'addition' => [],
+                'change'   => [],
+                'remove'   => [],
+                'language' => [],
+                'note'     => [],
+            ];
 
-            $items = [];
-        foreach (array_keys($entries) as $name) {
-                if(\property_exists($entry, $name)) {
-                    $items[$name] = $entry->$name->data;
+                $items = [];
+            foreach (array_keys($entries) as $name) {
+                    if (\property_exists($entry, $name)) {
+                        $items[$name] = $entry->$name->data;
+                }
             }
-        }
-            if(\count($items)) {
+            if (\count($items)) {
                 $modified[$key] = $items;
             }
         }
