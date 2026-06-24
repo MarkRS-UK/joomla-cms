@@ -439,8 +439,10 @@ class ManageModel extends InstallerModel
         }
 
         $changelog = new Changelog();
-        $changelog->setVersion($source === 'manage' ? $extension->version : $extension->updateVersion);
         $changelog->loadFromXml($changelogurl);
+        if (empty($changelog->changes)) {
+            return '';
+        }
 
         $modified = [];
         foreach ($changelog->changes as $key => $entry) {

@@ -142,20 +142,12 @@ class Changelog
     protected $currentChangelog;
 
     /**
-     * The version to match the changelog
-     *
-     * @var    string
-     * @since  4.0.0
-     */
-    private $matchVersion = '';
-
-    /**
      * Object containing the changelog data
      *
      * @var    \stdClass
      * @since  4.0.0
      */
-    public $changes;
+    public $changes = [];
 
     /**
      * Update manifest `<folder>` element
@@ -187,20 +179,6 @@ class Changelog
     protected function getLastTag()
     {
         return $this->stack[\count($this->stack) - 1];
-    }
-
-    /**
-     * Set the version to match.
-     *
-     * @param   string  $version  The version to match
-     *
-     * @return  void
-     *
-     * @since   4.0.0
-     */
-    public function setVersion(string $version)
-    {
-        $this->matchVersion = $version;
     }
 
     /**

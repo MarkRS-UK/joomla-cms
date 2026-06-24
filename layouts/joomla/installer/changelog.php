@@ -19,9 +19,9 @@ if (empty($displayData)) {
 
 foreach ($displayData as $key => $row) {
     ?>
-    <div id="<?php echo $key?>" class="changelog">
+    <div id="<?php echo $this->escape($key)?>" class="changelog">
         <div class="changelog__item justify-content-xxl-around">
-            <span><?php echo $key; ?></span>
+            <span><?php echo $this->escape($key); ?></span>
         </div>
     </div>
     <?php
